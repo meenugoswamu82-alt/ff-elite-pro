@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FF Elite Pro | Premium Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
+
+        :root {
+            --primary: #ff4b2b; --secondary: #ff416c; --dark-bg: #05050a;
+            --card-bg: rgba(22, 22, 37, 0.7); --text: #ffffff; --accent: #00d2ff; --success: #00ff87;
+            --warning: #ffaa00; --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--dark-bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+        
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #05050a 100%);
+            z-index: -1;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 75, 43, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .animate-fade { animation: fadeIn 0.5s ease forwards; }
+        .spinning { animation: spin 0.8s linear infinite; }
+
+        .auth-container { height: 100vh; display: flex; justify-content: center; align-items: center; background: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80') center/cover; }
+        .auth-card { 
+            background: var(--card-bg); backdrop-filter: blur(15px); padding: 40px; border-radius: 25px; 
+            width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--glass);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        .auth-card h2 { font-family: 'Orbitron', sans-serif; letter-spacing: 3px; margin-bottom: 20px; }
+        .auth-card h2 span { color: var(--primary); }
+
+        nav { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 1.2rem 5%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass);
+        }
+        .nav-right { display: flex; align-items: center; gap: 15px; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: bold; color: var(--primary); text-shadow: 0 0 10px var(--primary); cursor: pointer; }
+        
+        .refresh-btn { color: var(--accent); cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        .refresh-btn:hover { color: #fff; }
+
+        .wallet-pill { 
+            background: var(--glass); padding: 8px 18px; border-radius: 50px; 
+            color: var(--success); border: 1px solid var(--success); font-weight: 600;
+            cursor: pointer; transition: 0.3s;
+        }
+        .wallet-pill:hover { background: var(--success); color: #000; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
+            background: rgba(10, 10, 20, 0.95); backdrop-filter: blur(15px);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid var(--glass); z-index: 1000;
+        }
+        .nav-item { color: #666; text-align: center; font-size: 0.7rem; cursor: pointer; transition: 0.3s; }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 4px; display: block; }
+        .nav-item.active { color: var(--primary); }
+
+        .container { padding: 30px 5% 100px 5%; max-width: 1200px; margin: auto; }
+        .section-title { font-family: 'Orbitron', sans-serif; margin-bottom: 25px; font-size: 1.2rem; border-left: 4px solid var(--primary); padding-left: 15px; }
+
+        .hero-banner {
+            background: linear-gradient(to right, rgba(255, 75, 43, 0.2), rgba(0,0,0,0)), url('https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80');
+            background-size: cover; background-position: center; height: 200px; border-radius: 25px;
+            display: flex; flex-direction: column; justify-content: center; padding: 30px; margin-bottom: 30px;
+            border: 1px solid var(--glass);
+        }
+
+        .folder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+        .folder-card { 
+            background: var(--card-bg); height: 140px; border-radius: 20px; border: 1px solid var(--glass);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .folder-card:hover { transform: scale(1.05); background: var(--primary); box-shadow: 0 0 20px var(--primary); }
+        .folder-card i { font-size: 2.5rem; margin-bottom: 10px; }
+
+        /* Match Status Navigation Tabs */
+        .match-status-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; border: 1px solid var(--glass); }
+        .match-tab { flex: 1; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.85rem; font-weight: bold; border: none; background: transparent; color: #aaa; }
+        .match-tab.active { background: var(--primary); color: white; }
+
+        .match-card { 
+            background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--glass);
+            margin-bottom: 15px; transition: 0.3s;
+        }
+        .match-card:hover { border-color: var(--accent); }
+
+        .status-badge {
+            font-size: 0.65rem; padding: 4px 10px; border-radius: 30px; font-weight: bold;
+            display: inline-block; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .status-upcoming { background: var(--glass); color: var(--accent); border: 1px solid var(--accent); }
+        .status-started { background: rgba(255,170,0,0.2); color: var(--warning); border: 1px solid var(--warning); animation: pulse 1.5s infinite; }
+        .status-completed { background: rgba(0,255,135,0.2); color: var(--success); border: 1px solid var(--success); }
+
+        .profile-header { text-align: center; padding: 40px 0; }
+        .profile-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 15px; }
+
+        .match-info-card { 
+            background: linear-gradient(145deg, rgba(22,22,37,0.9), rgba(10,10,20,0.9)); 
+            border-radius: 30px; padding: 30px; border: 1px solid var(--glass);
+        }
+        .room-box { 
+            background: rgba(0, 210, 255, 0.1); border: 1px dashed var(--accent); 
+            padding: 20px; border-radius: 20px; margin: 20px 0; text-align: center;
+        }
+
+        input, select, textarea { 
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--glass);
+            background: rgba(0,0,0,0.3); color: white; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); outline: none; }
+        
+        .btn-main { 
+            width: 100%; padding: 15px; background: linear-gradient(45deg, var(--primary), var(--secondary)); 
+            border: none; color: white; font-weight: bold; border-radius: 12px; 
+            cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+        }
+        .btn-main:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4); }
+
+        .player-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(0,0,0,0.2); border-radius: 15px; overflow: hidden; }
+        .player-table th { background: var(--glass); padding: 15px; text-align: left; font-size: 0.9rem; }
+        .player-table td { padding: 15px; border-bottom: 1px solid var(--glass); font-size: 0.85rem; }
+
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center; z-index: 2000;
+        }
+
+        .loader-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 20px 0; overflow: hidden; }
+        .loader-progress { width: 0%; height: 100%; background: var(--success); transition: width 0.3s; }
+        .tx-log { font-size: 0.8rem; margin-top: 10px; border-top: 1px solid var(--glass); padding-top: 10px; max-height: 150px; overflow-y: auto; }
+
+        .wallet-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--glass); background: var(--glass); color: white; cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
+        .tab-btn.active { background: var(--primary); border-color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div id="auth-page" class="auth-container">
+        <div id="login-box" class="auth-card animate-fade">
+            <h2>FF<span>ELITE</span></h2>
+            <p style="margin-bottom: 20px; color: #aaa;">Pro-Level Tournament Portal</p>
+            <input type="text" id="login-user" placeholder="Username">
+            <input type="password" id="login-pass" placeholder="Password">
+            <button class="btn-main" onclick="handleLogin()">Login to Arena</button>
+            <p style="margin-top:15px; font-size:0.8rem; color:var(--accent); cursor:pointer;" onclick="toggleAuth('reg')">Create Gamer Account</p>
+        </div>
+        <div id="register-box" class="auth-card hidden animate-fade">
+            <h2>NEW<span>GAMES</span></h2>
+            <input type="text" id="reg-user" placeholder="Choose Username">
+            <input type="password" id="reg-pass" placeholder="Create Password">
+            <button class="btn-main" onclick="handleRegister()">Register Account</button>
+            <p style="margin-top:15px; font-size:0.8rem; color:var(--accent); cursor:pointer;" onclick="toggleAuth('login')">Return to Login</p>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden">
+        <nav>
+            <div class="logo" onclick="switchTab('home')">FF ELITE</div>
+            <div class="nav-right">
+                <div class="refresh-btn" onclick="manualRefresh()"><i class="fas fa-sync-alt" id="refresh-icon"></i></div>
+                <div class="wallet-pill" onclick="openModal('wallet')"><i class="fas fa-wallet"></i> ₹<span id="bal-txt">0.00</span></div>
+            </div>
+        </nav>
+
+        <div class="container">
+            
+            <div id="home-sec" class="animate-fade">
+                <div class="hero-banner">
+                    <h1 style="font-family:'Orbitron'; font-size: 1.5rem;">WELCOME BACK, <span id="welcome-user">GAMER</span></h1>
+                    <p style="font-size: 0.8rem; opacity: 0.8;">The Arena is calling. Are you ready?</p>
+                </div>
+                
+                <h3 class="section-title">QUICK PLAY</h3>
+                <div class="folder-grid">
+                    <div class="folder-card" onclick="openCategory('Clash Squad')"><i class="fas fa-users-crown"></i><p>CS Squad</p></div>
+                    <div class="folder-card" onclick="openCategory('1v1 Match')"><i class="fas fa-user-ninja"></i><p>1v1 Pro</p></div>
+                    <div class="folder-card" onclick="openCategory('Bermuda')"><i class="fas fa-map-marked-alt"></i><p>Bermuda BR</p></div>
+                    <div class="folder-card" onclick="openCategory('Lone Wolf')"><i class="fas fa-wolf"></i><p>Lone Wolf</p></div>
+                </div>
+            </div>
+
+            <div id="profile-sec" class="hidden animate-fade">
+                <div class="profile-header">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-img">
+                    <h2 id="prof-user" style="font-family: 'Orbitron';">USER_ELITE</h2>
+                    <p style="color: var(--accent);">Pro Tier Member</p>
+                </div>
+                
+                <div style="background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--glass);">
+                    <h4 style="margin-bottom: 15px; border-bottom: 1px solid var(--glass); padding-bottom: 10px;">Account Stats</h4>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Matches Joined</span><span id="stat-matches" style="color: var(--primary);">0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Total Earnings</span><span id="stat-earnings" style="color: var(--success);">₹0.00</span>
+                    </div>
+                </div>
+
+                <button class="btn-main" style="margin-top: 20px; background: #222;" onclick="location.reload()">Logout Account</button>
+            </div>
+
+            <div id="help-sec" class="hidden animate-fade">
+                <h3 class="section-title">SUPPORT CENTER</h3>
+                <div style="background: var(--card-bg); padding: 25px; border-radius: 25px; border: 1px solid var(--glass);">
+                    <p style="margin-bottom: 20px; font-size: 0.9rem; color: #ccc;">Need help with a match or payment? Contact our 24/7 elite support team.</p>
+                    <a href="mailto:kk8512092803@gmail.com" style="text-decoration:none; color:white; display:flex; align-items:center; gap:10px; background:var(--glass); padding:15px; border-radius:12px; border:1px solid var(--glass);">
+                        <i class="fas fa-envelope" style="color: var(--primary);"></i> kk8512092803@gmail.com
+                    </a>
+                </div>
+            </div>
+
+            <div id="match-list-view" class="hidden animate-fade">
+                <button onclick="switchTab('home')" style="background:none; color:var(--accent); border:none; margin-bottom:20px; cursor:pointer;"><i class="fas fa-arrow-left"></i> Categories</button>
+                
+                <div class="match-status-tabs">
+                    <button class="match-tab active" id="tab-upcoming" onclick="filterMatchesByStatus('Upcoming')">UPCOMING</button>
+                    <button class="match-tab" id="tab-started" onclick="filterMatchesByStatus('Started')">LIVE / STARTED</button>
+                    <button class="match-tab" id="tab-completed" onclick="filterMatchesByStatus('Completed')">COMPLETED</button>
+                </div>
+
+                <div id="match-cards-container"></div>
+            </div>
+
+            <div id="match-details-page" class="hidden animate-fade">
+                <button onclick="showMatches()" style="background:none; color:var(--accent); border:none; margin-bottom:20px; cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to List</button>
+                <div class="match-info-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 id="det-name" style="font-family: 'Orbitron'; font-size: 1.6rem; color: var(--primary);"></h2>
+                        <span id="det-status-badge" class="status-badge"></span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 5px; margin: 15px 0;">
+                        <p id="det-time" style="color:var(--accent);"><i class="far fa-clock"></i> </p>
+                        <p id="det-fee" style="color:var(--success);"><i class="fas fa-ticket-alt"></i> </p>
+                        <p id="det-kill-prize" style="color:var(--accent);"><i class="fas fa-crosshairs"></i> </p>
+                        <p id="det-win-prize" style="color:var(--success);"><i class="fas fa-trophy"></i> </p>
+                    </div>
+                    
+                    <div class="room-box">
+                        <p style="font-size:0.7rem; letter-spacing: 2px;">LIVE ROOM CREDENTIALS</p>
+                        <h3 id="live-rid" style="font-size: 1.5rem; margin: 10px 0;">ID: TBA</h3>
+                        <h3 id="live-rps" style="font-size: 1.5rem; color: var(--accent);">PASS: TBA</h3>
+                    </div>
+
+                    <p id="det-desc" style="line-height: 1.6; color: #bbb; margin-bottom:20px;"></p>
+                    <button id="join-match-btn" class="btn-main" onclick="openModal('join')">Confirm & Register</button>
+                </div>
+
+                <h3 class="section-title" style="margin-top:40px;">ENTRY LIST</h3>
+                <table class="player-table">
+                    <thead><tr><th>NO.</th><th>GAMER TAG</th><th>STATUS</th></tr></thead>
+                    <tbody id="joined-list"></tbody>
+                </table>
+            </div>
+
+            <div id="admin-panel" class="hidden animate-fade" style="margin-top:50px; border-top:1px solid #333; padding-top:30px;">
+                <h3 class="section-title">ADMIN CONTROL CENTER</h3>
+                
+                <div style="background:rgba(255,255,255,0.03); padding:25px; border-radius:20px; margin-bottom:20px;">
+                    <p style="color:var(--primary); font-weight:bold;">1. LAUNCH NEW MATCH</p>
+                    <input type="text" id="adm-name" placeholder="Tournament Name">
+                    <input type="text" id="adm-time" placeholder="Match Time (e.g. 10:00 PM)">
+                    <textarea id="adm-desc" placeholder="Rules & Prizepool..."></textarea>
+                    <select id="adm-cat">
+                        <option>Clash Squad</option><option>1v1 Match</option><option>Bermuda</option><option>Lone Wolf</option>
+                    </select>
+                    <input type="number" id="adm-fee" placeholder="Entry Fee (₹)">
+                    <input type="number" id="adm-kill-prize" placeholder="Prize Per Kill (₹)">
+                    <input type="number" id="adm-win-prize" placeholder="Booyah (Win) Prize (₹)">
+                    <button class="btn-main" onclick="adminCreateMatch()">Broadcast Match</button>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.03); padding:25px; border-radius:20px; margin-bottom:20px;">
+                    <p style="color:var(--accent); font-weight:bold;">2. TARGETED ID/PASS & STATUS PROGRESSION</p>
+                    <select id="adm-target-match" onchange="syncAdminMatchDetails()"></select>
+                    
+                    <p style="font-size:0.8rem; color:#888; margin: 10px 0 5px 0;">Set Match Flow Status:</p>
+                    <select id="adm-status-select">
+                        <option value="Upcoming">Upcoming (Taking registrations)</option>
+                        <option value="Started">Started (Live - Restrict registrations)</option>
+                        <option value="Completed">Completed (Match Finished)</option>
+                    </select>
+
+                    <input type="text" id="adm-rid" placeholder="Room ID">
+                    <input type="text" id="adm-rps" placeholder="Password">
+                    <div style="display: flex; gap:10px; margin-top:10px;">
+                        <button class="btn-main" onclick="adminUpdateRoom()">Update Info</button>
+                        <button class="btn-main" onclick="adminCompleteNow()" style="background: var(--success); color: black;">Complete Match Now</button>
+                    </div>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.03); padding:25px; border-radius:20px; margin-bottom:20px;">
+                    <p style="color:var(--success); font-weight:bold;">3. DISTRIBUTE REWARDS & COMPLETE MATCH</p>
+                    <div id="admin-players-distribute-box">Select a match above to update results.</div>
+                </div>
+
+                <button class="btn-main" onclick="clearAllData()" style="background:red; margin-top:15px; opacity:0.6;">System Reset (Wipe Data)</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" id="nav-home" onclick="switchTab('home')">
+                <i class="fas fa-home"></i>Home
+            </div>
+            <div class="nav-item" id="nav-prof" onclick="switchTab('profile')">
+                <i class="fas fa-user"></i>Profile
+            </div>
+            <div class="nav-item" id="nav-help" onclick="switchTab('help')">
+                <i class="fas fa-headset"></i>Support
+            </div>
+        </div>
+    </div>
+
+    <div id="join-modal" class="modal-overlay hidden">
+        <div class="modal-content animate-fade" style="background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 25px; padding: 30px; border: 1px solid var(--glass);">
+            <h3>Register for Arena</h3>
+            <input type="text" id="j-ign" placeholder="Your In-Game Tag (IGN)">
+            <button class="btn-main" onclick="processJoin()">Confirm Join</button>
+            <button onclick="closeModals()" style="background:none; border:none; color:#777; margin-top:15px; cursor:pointer; width:100%;">Discard</button>
+        </div>
+    </div>
+
+    <div id="wallet-modal" class="modal-overlay hidden">
+        <div class="modal-content animate-fade" style="background: #111; border-radius: 25px; padding: 30px; width: 95%; max-width: 400px; border: 1px solid var(--glass);">
+            <div class="wallet-tabs">
+                <button class="tab-btn active" id="tab-dep" onclick="switchWalletTab('dep')">Deposit</button>
+                <button class="tab-btn" id="tab-wd" onclick="switchWalletTab('wd')">Withdraw</button>
+            </div>
+            <div id="wallet-main">
+                <div style="background: var(--glass); padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
+                    <p style="font-size: 0.8rem; color: #888;">Available Balance</p>
+                    <h2 style="color: var(--success); font-size: 2rem;">₹<span id="wallet-bal-txt">0.00</span></h2>
+                </div>
+                <div id="dep-view">
+                    <input type="number" id="dep-amt" placeholder="Amount to Add (₹)">
+                    <button class="btn-main" onclick="startPayment()">Proceed to Deposit</button>
+                </div>
+                <div id="wd-view" class="hidden">
+                    <input type="number" id="wd-amt" placeholder="Withdraw Amount (₹)">
+                    <input type="text" id="wd-id" placeholder="Your UPI ID">
+                    <button class="btn-main" onclick="processWithdraw()">Request Payout</button>
+                </div>
+                <div class="tx-log" id="tx-log">No recent activity.</div>
+            </div>
+            <div id="wallet-pay" class="hidden">
+                <h3 style="text-align:center; margin-bottom:10px;">UPI SECURE PAY</h3>
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid var(--accent); text-align: center; margin-bottom: 15px;">
+                    <p style="font-size: 0.7rem; color: var(--accent);">MERCHANT UPI ID</p>
+                    <p style="font-weight: bold; letter-spacing: 1px;">9711439206@ptsbi</p>
+                </div>
+                <button class="btn-main" id="upi-link-btn" style="background: #28a745; margin-bottom: 15px;"><i class="fas fa-mobile-alt"></i> Open UPI App</button>
+                <div style="border-top: 1px solid #333; padding-top: 15px;">
+                    <input type="text" id="upi-ref-id" placeholder="12-digit Transaction ID">
+                    <button class="btn-main" onclick="processPayment()">Submit Verification</button>
+                </div>
+            </div>
+            <div id="wallet-loader" class="hidden" style="text-align: center;">
+                <i class="fas fa-circle-notch spinning" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
+                <h4 id="pay-status-txt">Connecting...</h4>
+                <div class="loader-bar"><div class="loader-progress" id="pay-progress"></div></div>
+            </div>
+            <button onclick="closeModals()" style="background:none; border:none; color:#555; margin-top:15px; cursor:pointer; width:100%;">Back</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA PERSISTENCE ---
+        let balance = parseFloat(localStorage.getItem('ff_balance')) || 0.00;
+        let matches = JSON.parse(localStorage.getItem('ff_matches')) || [];
+        let players = JSON.parse(localStorage.getItem('ff_players')) || [];
+        let txHistory = JSON.parse(localStorage.getItem('ff_tx')) || [];
+        let registeredUsers = JSON.parse(localStorage.getItem('ff_registered_users')) || [];
+        let earnings = parseFloat(localStorage.getItem('ff_earnings')) || 0.00;
+        let activeMatch = null;
+        let currentUser = localStorage.getItem('ff_user') || "Gamer";
+        let activeCategory = "Clash Squad";
+        let activeMatchStatusTab = "Upcoming";
+
+        function saveToStorage() {
+            localStorage.setItem('ff_balance', balance);
+            localStorage.setItem('ff_matches', JSON.stringify(matches));
+            localStorage.setItem('ff_players', JSON.stringify(players));
+            localStorage.setItem('ff_tx', JSON.stringify(txHistory));
+            localStorage.setItem('ff_user', currentUser);
+            localStorage.setItem('ff_registered_users', JSON.stringify(registeredUsers));
+            localStorage.setItem('ff_earnings', earnings);
+            
+            document.getElementById('bal-txt').innerText = balance.toFixed(2);
+            document.getElementById('wallet-bal-txt').innerText = balance.toFixed(2);
+            document.getElementById('welcome-user').innerText = currentUser.toUpperCase();
+            document.getElementById('prof-user').innerText = currentUser.toUpperCase();
+            document.getElementById('stat-matches').innerText = players.filter(p => p.username === currentUser).length;
+            document.getElementById('stat-earnings').innerText = "₹" + earnings.toFixed(2);
+            renderLogs();
+        }
+
+        // --- AUTH SYSTEM ---
+        function handleRegister() {
+            const user = document.getElementById('reg-user').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+            if (user.length < 3 || pass.length < 4) return alert("Credentials too short!");
+            if (registeredUsers.find(u => u.user.toLowerCase() === user.toLowerCase())) return alert("Already taken!");
+
+            registeredUsers.push({ user, pass });
+            saveToStorage();
+            alert("Registration Successful! Please log in.");
+            toggleAuth('login');
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+
+            if (user === "admin" && pass === "8512092803k") {
+                currentUser = "admin";
+                document.getElementById('admin-panel').classList.remove('hidden');
+                enterApp();
+                return;
+            }
+
+            const valid = registeredUsers.find(u => u.user === user && u.pass === pass);
+            if (valid) { currentUser = user; enterApp(); } 
+            else { alert("❌ Invalid Credentials!"); }
+        }
+
+        function enterApp() {
+            document.getElementById('auth-page').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            saveToStorage();
+            syncAdminDropdown();
+        }
+
+        function toggleAuth(mode) {
+            document.getElementById('login-box').classList.toggle('hidden', mode === 'reg');
+            document.getElementById('register-box').classList.toggle('hidden', mode === 'login');
+        }
+
+        // --- NAVIGATION ---
+        function switchTab(tab) {
+            document.getElementById('home-sec').classList.add('hidden');
+            document.getElementById('profile-sec').classList.add('hidden');
+            document.getElementById('help-sec').classList.add('hidden');
+            document.getElementById('match-list-view').classList.add('hidden');
+            document.getElementById('match-details-page').classList.add('hidden');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            if(tab === 'home') { document.getElementById('home-sec').classList.remove('hidden'); document.getElementById('nav-home').classList.add('active'); }
+            else if(tab === 'profile') { document.getElementById('profile-sec').classList.remove('hidden'); document.getElementById('nav-prof').classList.add('active'); }
+            else if(tab === 'help') { document.getElementById('help-sec').classList.remove('hidden'); document.getElementById('nav-help').classList.add('active'); }
+        }
+
+        // --- WALLET FLOW ---
+        function switchWalletTab(tab) {
+            document.getElementById('tab-dep').classList.toggle('active', tab === 'dep');
+            document.getElementById('tab-wd').classList.toggle('active', tab === 'wd');
+            document.getElementById('dep-view').classList.toggle('hidden', tab === 'wd');
+            document.getElementById('wd-view').classList.toggle('hidden', tab === 'dep');
+        }
+
+        function startPayment() {
+            const amt = document.getElementById('dep-amt').value;
+            if(!amt || amt <= 0) return alert("Check entry");
+            document.getElementById('wallet-main').classList.add('hidden');
+            document.getElementById('wallet-pay').classList.remove('hidden');
+            document.getElementById('upi-link-btn').onclick = () => window.location.href = `upi://pay?pa=9711439206@ptsbi&pn=FFElitePro&am=${amt}&cu=INR`;
+        }
+
+        function processPayment() {
+            const amt = parseFloat(document.getElementById('dep-amt').value);
+            const refId = document.getElementById('upi-ref-id').value;
+            if(refId.length < 6) return alert("Verify your Ref ID!");
+
+            document.getElementById('wallet-pay').classList.add('hidden');
+            document.getElementById('wallet-loader').classList.remove('hidden');
+            
+            let prog = 0;
+            const interval = setInterval(() => {
+                prog += 20;
+                document.getElementById('pay-progress').style.width = prog + "%";
+                if(prog >= 100) {
+                    clearInterval(interval);
+                    balance += amt;
+                    txHistory.unshift(`+ ₹${amt.toFixed(2)} Deposit (Ref: ${refId})`);
+                    saveToStorage();
+                    alert("Payment Added Successfully!");
+                    resetWalletUI();
+                    closeModals();
+                }
+            }, 150);
+        }
+
+        function processWithdraw() {
+            const amt = parseFloat(document.getElementById('wd-amt').value);
+            const id = document.getElementById('wd-id').value;
+            if(!amt || amt > balance || !id) return alert("Verify fields!");
+            balance -= amt;
+            txHistory.unshift(`- ₹${amt.toFixed(2)} Payout Pending (${id})`);
+            saveToStorage();
+            alert("Requested Successfully!");
+        }
+
+        function resetWalletUI() {
+            document.getElementById('wallet-main').classList.remove('hidden');
+            document.getElementById('wallet-pay').classList.add('hidden');
+            document.getElementById('wallet-loader').classList.add('hidden');
+            document.getElementById('pay-progress').style.width = "0%";
+        }
+
+        function renderLogs() {
+            const logDiv = document.getElementById('tx-log');
+            logDiv.innerHTML = txHistory.map(h => `<div style="color: ${h.includes('+') ? '#00ff87' : '#ff4b2b'}; padding:5px 0; font-size:0.7rem;">${h}</div>`).join('') || "No transactions.";
+        }
+
+        // --- MATCH PROGRESS & FILTERING SYSTEM ---
+        function getStatusClass(status) {
+            if (status === 'Started') return 'status-started';
+            if (status === 'Completed') return 'status-completed';
+            return 'status-upcoming';
+        }
+
+        function openCategory(cat) {
+            activeCategory = cat;
+            document.getElementById('home-sec').classList.add('hidden');
+            document.getElementById('match-list-view').classList.remove('hidden');
+            filterMatchesByStatus('Upcoming'); // Default Upcoming tab select krein
+        }
+
+        function filterMatchesByStatus(status) {
+            activeMatchStatusTab = status;
+            document.querySelectorAll('.match-tab').forEach(el => el.classList.remove('active'));
+            if(status === 'Upcoming') document.getElementById('tab-upcoming').classList.add('active');
+            if(status === 'Started') document.getElementById('tab-started').classList.add('active');
+            if(status === 'Completed') document.getElementById('tab-completed').classList.add('active');
+
+            const filtered = matches.filter(m => m.cat === activeCategory && m.status === status);
+            document.getElementById('match-cards-container').innerHTML = filtered.map(m => `
+                <div class="match-card animate-fade">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span class="status-badge ${getStatusClass(m.status)}">${m.status}</span>
+                            <h4 style="margin-top:5px;">${m.name}</h4>
+                            <p style="color:var(--accent); font-size:0.75rem;"><i class="far fa-clock"></i> ${m.time}</p>
+                        </div>
+                        <div style="text-align:right;"><p style="color:var(--success); font-weight:bold;">₹${m.fee}</p>
+                        <button class="btn-main" style="padding: 5px 12px; font-size:0.7rem; width:auto; margin-top:5px;" onclick="viewDetails(${m.id})">View Details</button></div>
+                    </div>
+                </div>
+            `).join('') || `<p style='text-align:center; padding:50px; color:#555;'>No ${status} tournaments active here.</p>`;
+        }
+
+        function viewDetails(id) {
+            activeMatch = matches.find(m => m.id == id);
+            document.getElementById('match-list-view').classList.add('hidden');
+            document.getElementById('match-details-page').classList.remove('hidden');
+            
+            document.getElementById('det-name').innerText = activeMatch.name;
+            document.getElementById('det-time').innerHTML = `<i class="far fa-clock"></i> Time: ${activeMatch.time}`;
+            document.getElementById('det-fee').innerHTML = `<i class="fas fa-ticket-alt"></i> Entry Fee: ₹${activeMatch.fee.toFixed(2)}`;
+            document.getElementById('det-kill-prize').innerHTML = `<i class="fas fa-crosshairs"></i> Kill Prize: ₹${activeMatch.killPrize.toFixed(2)}`;
+            document.getElementById('det-win-prize').innerHTML = `<i class="fas fa-trophy"></i> Booyah Prize: ₹${activeMatch.winPrize.toFixed(2)}`;
+            document.getElementById('det-desc').innerText = activeMatch.desc;
+            
+            const badge = document.getElementById('det-status-badge');
+            badge.className = `status-badge ${getStatusClass(activeMatch.status)}`;
+            badge.innerText = activeMatch.status;
+
+            document.getElementById('live-rid').innerText = "ID: " + activeMatch.rid;
+            document.getElementById('live-rps').innerText = "PASS: " + activeMatch.rps;
+
+            const btn = document.getElementById('join-match-btn');
+            if (activeMatch.status === 'Started') {
+                btn.innerText = "Match is Live (Locked)";
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+            } else if (activeMatch.status === 'Completed') {
+                btn.innerText = "Match Finished";
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+            } else {
+                btn.innerText = "Confirm & Register";
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            }
+
+            renderEntryList();
+        }
+
+        function renderEntryList() {
+            const list = players.filter(p => p.matchId === activeMatch.id);
+            document.getElementById('joined-list').innerHTML = list.map((p, i) => `<tr><td>${i+1}</td><td>${p.ign}</td><td>Confirmed</td></tr>`).join('');
+        }
+
+        function processJoin() {
+            const ign = document.getElementById('j-ign').value;
+            if(!ign) return alert("Check IGN!");
+            
+            if(players.find(p => p.matchId === activeMatch.id && p.username === currentUser)) return alert("Already Registered!");
+            if(balance < activeMatch.fee) return alert("Check Balance!");
+            
+            balance -= activeMatch.fee;
+            players.push({ matchId: activeMatch.id, username: currentUser, ign: ign, kills: 0, isWinner: false });
+            txHistory.unshift(`- ₹${activeMatch.fee.toFixed(2)} Joined Match: ${activeMatch.name}`);
+            saveToStorage();
+            renderEntryList();
+            closeModals();
+            alert("Successfully Registered!");
+        }
+
+        // --- ADMIN PROGRESS FLOWS ---
+        function adminCreateMatch() {
+            const match = {
+                id: Date.now(),
+                name: document.getElementById('adm-name').value,
+                time: document.getElementById('adm-time').value,
+                desc: document.getElementById('adm-desc').value,
+                cat: document.getElementById('adm-cat').value,
+                fee: parseFloat(document.getElementById('adm-fee').value) || 0,
+                killPrize: parseFloat(document.getElementById('adm-kill-prize').value) || 0,
+                winPrize: parseFloat(document.getElementById('adm-win-prize').value) || 0,
+                rid: "TBA", rps: "TBA", status: "Upcoming"
+            };
+            matches.push(match);
+            saveToStorage();
+            syncAdminDropdown();
+            alert("Match Created on Board!");
+        }
+
+        function syncAdminDropdown() {
+            const dropdown = document.getElementById('adm-target-match');
+            dropdown.innerHTML = matches.map(m => `<option value="${m.id}">${m.name} (${m.status})</option>`).join('');
+            syncAdminMatchDetails();
+        }
+
+        function syncAdminMatchDetails() {
+            const matchId = document.getElementById('adm-target-match').value;
+            if(!matchId) return;
+
+            const selectedMatch = matches.find(m => m.id == matchId);
+            document.getElementById('adm-rid').value = selectedMatch.rid;
+            document.getElementById('adm-rps').value = selectedMatch.rps;
+            document.getElementById('adm-status-select').value = selectedMatch.status;
+
+            const list = players.filter(p => p.matchId == matchId);
+            const box = document.getElementById('admin-players-distribute-box');
+
+            if(selectedMatch.status === "Completed") {
+                box.innerHTML = `<p style="color:var(--success);">Match completed. Results were calculated.</p>`;
+                return;
+            }
+
+            if(list.length === 0) {
+                box.innerHTML = `<p style="color:#666;">No registrations recorded yet.</p>`;
+                return;
+            }
+
+            let html = `<table class="player-table"><thead><tr><th>IGN</th><th>Kills</th><th>Booyah</th></tr></thead><tbody>`;
+            list.forEach(p => {
+                html += `
+                    <tr>
+                        <td>${p.ign}</td>
+                        <td><input type="number" id="kills-${p.matchId}-${p.username}" value="0" style="width:70px; padding:5px; margin:0;"></td>
+                        <td><input type="checkbox" id="win-${p.matchId}-${p.username}" style="width:20px; height:20px; cursor:pointer;"></td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table><button class="btn-main" style="margin-top:15px; background:var(--success); color:#000;" onclick="distributeMatchRewards(${matchId})">Send Prizes & Complete Match</button>`;
+            box.innerHTML = html;
+        }
+
+        function adminUpdateRoom() {
+            const id = document.getElementById('adm-target-match').value;
+            const m = matches.find(x => x.id == id);
+            m.rid = document.getElementById('adm-rid').value;
+            m.rps = document.getElementById('adm-rps').value;
+            m.status = document.getElementById('adm-status-select').value;
+            saveToStorage();
+            syncAdminDropdown();
+            alert("Match Details & Progress updated!");
+        }
+
+        function adminCompleteNow() {
+            const id = document.getElementById('adm-target-match').value;
+            if(!id) return;
+            const m = matches.find(x => x.id == id);
+            m.status = "Completed";
+            saveToStorage();
+            syncAdminDropdown();
+            alert("Match status marked as COMPLETED successfully.");
+        }
+
+        function distributeMatchRewards(matchId) {
+            const selectedMatch = matches.find(m => m.id == matchId);
+            if (!selectedMatch || selectedMatch.status === "Completed") return;
+
+            const list = players.filter(p => p.matchId == matchId);
+            list.forEach(p => {
+                const kills = parseInt(document.getElementById(`kills-${p.matchId}-${p.username}`).value) || 0;
+                const isWinner = document.getElementById(`win-${p.matchId}-${p.username}`).checked;
+                
+                let winAmt = 0;
+                winAmt += kills * selectedMatch.killPrize;
+                if (isWinner) winAmt += selectedMatch.winPrize;
+
+                p.kills = kills; p.isWinner = isWinner;
+
+                if (winAmt > 0) {
+                    if(p.username === currentUser) { balance += winAmt; earnings += winAmt; txHistory.unshift(`+ ₹${winAmt.toFixed(2)} Rewards: ${selectedMatch.name}`); } 
+                    else {
+                        let b = parseFloat(localStorage.getItem(`ff_balance_${p.username}`)) || 0;
+                        let e = parseFloat(localStorage.getItem(`ff_earnings_${p.username}`)) || 0;
+                        localStorage.setItem(`ff_balance_${p.username}`, b + winAmt);
+                        localStorage.setItem(`ff_earnings_${p.username}`, e + winAmt);
+                    }
+                }
+            });
+
+            selectedMatch.status = "Completed";
+            saveToStorage();
+            syncAdminDropdown();
+            alert("Success! Payouts transferred and status changed to COMPLETED.");
+        }
+
+        function clearAllData() { if(confirm("Are you sure? All balances/matches will clear!")) { localStorage.clear(); location.reload(); } }
+        function openModal(m) { document.getElementById(m + '-modal').classList.remove('hidden'); }
+        function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden')); }
+        function showMatches() { document.getElementById('match-details-page').classList.add('hidden'); document.getElementById('match-list-view').classList.remove('hidden'); filterMatchesByStatus(activeMatchStatusTab); }
+        function manualRefresh() { 
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('spinning');
+            setTimeout(() => { icon.classList.remove('spinning'); saveToStorage(); }, 1000);
+        }
+
+        window.onload = saveToStorage;
+    </script>
+</body>
+</html>
